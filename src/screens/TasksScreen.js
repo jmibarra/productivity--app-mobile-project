@@ -77,9 +77,7 @@ const TasksScreen = () => {
                             <Text style={[styles.taskTitle, item.completed && styles.textCompleted]}>
                                 {item.title || 'No Title'}
                             </Text>
-                            {!item.completed && (
-                                <Ionicons name={icon} size={18} color={color} style={styles.priorityIcon} />
-                            )}
+                            <Ionicons name={icon} size={18} color={color} style={styles.priorityIcon} />
                         </View>
                         {item.description ? (
                             <Text style={[styles.taskDesc, item.completed && styles.textCompleted]}>
