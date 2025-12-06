@@ -43,7 +43,7 @@ export const getTasks = async () => {
 export const getNotes = async () => {
     try {
         const response = await api.get('/notes');
-        return response.data; // Adjust if backend wraps notes in object like tasks
+        return response.data; 
     } catch (error) {
         throw error;
     }
@@ -52,7 +52,7 @@ export const getNotes = async () => {
 export const getHabits = async () => {
     try {
         const response = await api.get('/habits');
-        return response.data; // Adjust if backend wraps habits in object like tasks
+        return response.data;
     } catch (error) {
         throw error;
     }

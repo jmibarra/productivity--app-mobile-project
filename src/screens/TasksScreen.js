@@ -5,7 +5,7 @@ import { getTasks } from '../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const TasksScreen = () => {
-    const { userInfo } = useContext(AuthContext); // Removed logout, will move to Settings
+    const { userInfo } = useContext(AuthContext);
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
 

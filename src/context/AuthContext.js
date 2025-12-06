@@ -29,24 +29,13 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setIsLoading(true);
     try {
-        // Since we don't have the exact response structure from the user request, 
-        // I will assume the standard response contains a token and user object.
-        // We might need to adjust this based on the actual API response.
+
         const res = await loginUser(email, password);
         
-        // Mocking structure if not clear. Adjust 'res.token' and 'res.user' based on actual API.
-        // The user mentioned "simplemente una pantalla con los datos de ese usuario"
-        
-        // Let's assume the response IS the user object or contains it.
-        // If the API returns { token: '...', user: { ... } }
-        
-        // For now, let's store the whole response as user info if token is separate,
-        // or extract them. I'll stick to a common pattern.
         
         if (res && res.authentication && res.authentication.sessionToken) {
              const token = res.authentication.sessionToken;
-             // We don't have user object in login response apparently, so we might need to fetch it or use a placeholder
-             // For now let's store the token and use a placeholder user until we fetch the profile
+
              const user = { email }; // minimal user info
 
              setUserToken(token);

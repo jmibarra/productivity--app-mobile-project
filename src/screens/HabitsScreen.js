@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { getHabits } from '../services/api'; // We need to add this to api.js
+import { getHabits } from '../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const HabitsScreen = () => {

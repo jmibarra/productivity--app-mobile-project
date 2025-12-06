@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { View, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -17,11 +18,26 @@ const Tab = createBottomTabNavigator();
 const MainTabs = () => {
     return (
         <Tab.Navigator
-            screenOptions={{
-                headerShown: false, // We use custom headers in screens or safe area views
+            screenOptions={({ route }) => ({
+                headerShown: false,
                 tabBarActiveTintColor: '#007AFF',
                 tabBarInactiveTintColor: 'gray',
-            }}
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName;
+
+                    if (route.name === 'Tasks') {
+                        iconName = focused ? 'list' : 'list-outline';
+                    } else if (route.name === 'Notes') {
+                        iconName = focused ? 'document-text' : 'document-text-outline';
+                    } else if (route.name === 'Habits') {
+                        iconName = focused ? 'calendar' : 'calendar-outline';
+                    } else if (route.name === 'Configuracion') {
+                        iconName = focused ? 'settings' : 'settings-outline';
+                    }
+
+                    return <Ionicons name={iconName} size={size} color={color} />;
+                },
+            })}
         >
             <Tab.Screen name="Tasks" component={TasksScreen} />
             <Tab.Screen name="Notes" component={NotesScreen} />

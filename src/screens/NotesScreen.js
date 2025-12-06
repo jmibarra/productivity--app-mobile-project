@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
-import { getNotes } from '../services/api'; // We need to add this to api.js
+import { getNotes } from '../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const NotesScreen = () => {
