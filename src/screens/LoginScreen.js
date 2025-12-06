@@ -16,7 +16,7 @@ const LoginScreen = () => {
          try {
              await login(email, password);
          } catch (e) {
-             Alert.alert('Login Failed', 'Invalid credentials');
+             Alert.alert('Login Failed', e.message || 'Invalid credentials');
          }
     }
 

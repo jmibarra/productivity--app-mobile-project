@@ -1,3 +1,5 @@
-export const API_URL = 'http://localhost:443';
-// For Android Emulator use 'http://10.0.2.2:443'
-// For physical device, use your machine's local IP address
+// Based on your Metro logs, your local IP is 192.168.1.13
+// This key is required for physical devices to connect to your computer.
+// If your IP changes (e.g. restart router), you will need to update this.
+
+export const API_URL = 'http://192.168.1.13:443'; 

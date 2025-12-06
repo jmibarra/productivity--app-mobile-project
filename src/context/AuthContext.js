@@ -43,26 +43,33 @@ export const AuthProvider = ({ children }) => {
         // For now, let's store the whole response as user info if token is separate,
         // or extract them. I'll stick to a common pattern.
         
-        if (res) {
-             // Assuming res contains the token (or we use the user data itself if no separate token)
-             // The user said: "Un login para poder obtener mi usuario como en el front end" 
-             
-             // If the backend is simple, maybe it just returns the user.
-             // But usually there's a token.
-             // I'll assume res.token and res.user exist for now.
-             
-             const token = res.token || 'dummy-token'; 
-             const user = res.user || res;
+        if (res && res.authentication && res.authentication.sessionToken) {
+             const token = res.authentication.sessionToken;
+             // We don't have user object in login response apparently, so we might need to fetch it or use a placeholder
+             // For now let's store the token and use a placeholder user until we fetch the profile
+             const user = { email }; // minimal user info
 
              setUserToken(token);
              setUserInfo(user);
 
              await SecureStore.setItemAsync('userToken', token);
              await SecureStore.setItemAsync('userInfo', JSON.stringify(user));
+        } else {
+            console.log('Invalid response structure:', res);
+            throw new Error('Invalid response from server');
         }
     } catch (e) {
-        console.log(`Login error ${e}`);
-        throw e;
+        console.log(`Login error details: ${e.message}`);
+        if (e.response) {
+            console.log('Response status:', e.response.status);
+            console.log('Response data:', e.response.data);
+            throw new Error(e.response.data.message || 'Login failed');
+        } else if (e.request) {
+            console.log('No response received (Network Error usually)');
+            throw new Error('Network Error: Could not connect to server. Check your internet connection or server URL.');
+        } else {
+            throw e;
+        }
     } finally {
         setIsLoading(false);
     }
