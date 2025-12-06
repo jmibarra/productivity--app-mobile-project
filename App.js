@@ -11,6 +11,7 @@ import TasksScreen from './src/screens/TasksScreen';
 import NotesScreen from './src/screens/NotesScreen';
 import HabitsScreen from './src/screens/HabitsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import TaskDetailScreen from './src/screens/TaskDetailScreen'; // Detail Screen
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -68,11 +69,22 @@ const AppNav = () => {
               options={{headerShown: false}} 
           />
         ) : (
-          <Stack.Screen 
-              name="Main" 
-              component={MainTabs} 
-              options={{headerShown: false}} 
-          />
+          <>
+            <Stack.Screen 
+                name="Main" 
+                component={MainTabs} 
+                options={{headerShown: false}} 
+            />
+            <Stack.Screen 
+                name="TaskDetail" 
+                component={TaskDetailScreen}
+                options={{ 
+                    headerShown: true, // Show header for back button
+                    headerTitle: '', // Minimal header
+                    headerBackTitle: 'Back'
+                }} 
+            />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>

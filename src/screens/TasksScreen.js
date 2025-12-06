@@ -5,7 +5,7 @@ import { getTasks, updateTask } from '../services/api'; // Import updateTask
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-const TasksScreen = () => {
+const TasksScreen = ({ navigation }) => {
     const { userInfo } = useContext(AuthContext);
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -60,18 +60,24 @@ const TasksScreen = () => {
         const { icon, color } = getPriorityDetails(item.priority);
 
         return (
-            <TouchableOpacity 
-                style={[styles.card, item.completed && styles.cardCompleted]} 
-                onPress={() => handleToggleComplete(item)}
-                activeOpacity={0.7}
-            >
-                <View style={styles.cardContent}>
+            <View style={[styles.card, item.completed && styles.cardCompleted]}>
+                <TouchableOpacity 
+                    onPress={() => handleToggleComplete(item)}
+                    style={styles.checkboxContainer}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} // Increase hit area
+                >
                      <Ionicons 
-                        name={item.completed ? "checkbox" : "square-outline"} 
-                        size={24} 
+                        name={item.completed ? "checkmark-circle" : "ellipse-outline"} 
+                        size={28} 
                         color={item.completed ? "#999" : "#007AFF"} 
-                        style={styles.checkbox}
                     />
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={styles.cardContent}
+                    onPress={() => navigation.navigate('TaskDetail', { task: item })}
+                    activeOpacity={0.7}
+                >
                     <View style={styles.textContainer}>
                         <View style={styles.titleRow}>
                             <Text style={[styles.taskTitle, item.completed && styles.textCompleted]}>
@@ -80,13 +86,13 @@ const TasksScreen = () => {
                             <Ionicons name={icon} size={18} color={color} style={styles.priorityIcon} />
                         </View>
                         {item.description ? (
-                            <Text style={[styles.taskDesc, item.completed && styles.textCompleted]}>
+                            <Text style={[styles.taskDesc, item.completed && styles.textCompleted]} numberOfLines={2}>
                                 {item.description}
                             </Text>
                         ) : null}
                     </View>
-                </View>
-            </TouchableOpacity>
+                </TouchableOpacity>
+            </View>
         );
     };
 
@@ -167,17 +173,19 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     cardCompleted: {
         backgroundColor: '#f9f9f9', // Slightly grayer background
         opacity: 0.8,
     },
-    cardContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
+    checkboxContainer: {
+        padding: 5,
+        marginRight: 10,
     },
-    checkbox: {
-        marginRight: 15,
+    cardContent: {
+        flex: 1,
     },
     textContainer: {
         flex: 1,
