@@ -47,32 +47,50 @@ const TasksScreen = () => {
         ? tasks.filter(task => !task.completed) 
         : tasks;
 
-    const renderItem = ({ item }) => (
-        <TouchableOpacity 
-            style={[styles.card, item.completed && styles.cardCompleted]} 
-            onPress={() => handleToggleComplete(item)}
-            activeOpacity={0.7}
-        >
-            <View style={styles.cardContent}>
-                 <Ionicons 
-                    name={item.completed ? "checkbox" : "square-outline"} 
-                    size={24} 
-                    color={item.completed ? "#999" : "#007AFF"} 
-                    style={styles.checkbox}
-                />
-                <View style={styles.textContainer}>
-                    <Text style={[styles.taskTitle, item.completed && styles.textCompleted]}>
-                        {item.title || 'No Title'}
-                    </Text> 
-                    {item.description ? (
-                        <Text style={[styles.taskDesc, item.completed && styles.textCompleted]}>
-                            {item.description}
-                        </Text>
-                    ) : null}
+    const getPriorityDetails = (priority) => {
+        switch (priority) {
+            case 1: return { icon: 'alert-circle', color: '#FF3B30', label: 'Alta' }; // Red
+            case 2: return { icon: 'arrow-down-circle', color: '#FF9500', label: 'Media' }; // Orange
+            case 3: return { icon: 'snow', color: '#007AFF', label: 'Baja' }; // Blue
+            default: return { icon: 'help-circle', color: '#8E8E93', label: 'Ninguna' }; // Grey
+        }
+    };
+
+    const renderItem = ({ item }) => {
+        const { icon, color } = getPriorityDetails(item.priority);
+
+        return (
+            <TouchableOpacity 
+                style={[styles.card, item.completed && styles.cardCompleted]} 
+                onPress={() => handleToggleComplete(item)}
+                activeOpacity={0.7}
+            >
+                <View style={styles.cardContent}>
+                     <Ionicons 
+                        name={item.completed ? "checkbox" : "square-outline"} 
+                        size={24} 
+                        color={item.completed ? "#999" : "#007AFF"} 
+                        style={styles.checkbox}
+                    />
+                    <View style={styles.textContainer}>
+                        <View style={styles.titleRow}>
+                            <Text style={[styles.taskTitle, item.completed && styles.textCompleted]}>
+                                {item.title || 'No Title'}
+                            </Text>
+                            {!item.completed && (
+                                <Ionicons name={icon} size={18} color={color} style={styles.priorityIcon} />
+                            )}
+                        </View>
+                        {item.description ? (
+                            <Text style={[styles.taskDesc, item.completed && styles.textCompleted]}>
+                                {item.description}
+                            </Text>
+                        ) : null}
+                    </View>
                 </View>
-            </View>
-        </TouchableOpacity>
-    );
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -166,11 +184,20 @@ const styles = StyleSheet.create({
     textContainer: {
         flex: 1,
     },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 5,
+    },
     taskTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 5,
         color: '#333',
+        flex: 1,
+    },
+    priorityIcon: {
+        marginLeft: 8,
     },
     taskDesc: {
         color: '#666',
