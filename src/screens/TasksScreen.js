@@ -187,6 +187,33 @@ const styles = StyleSheet.create({
         padding: 20,
         paddingBottom: 100, // Ensure last item is visible above Tab Bar
     },
+    header: {
+        padding: 20,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    filterText: {
+        marginRight: 10,
+        color: '#666',
+    },
+    center: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     card: {
         backgroundColor: '#fff',
         padding: 15,

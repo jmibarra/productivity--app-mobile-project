@@ -24,7 +24,7 @@ const Tab = createBottomTabNavigator();
 const CustomTabBarButton = ({ children, onPress }) => (
     <TouchableOpacity
         style={{
-            top: -20,
+            top: -30, // Adjusted to float better
             justifyContent: 'center',
             alignItems: 'center',
             ...styles.shadow
@@ -75,7 +75,7 @@ const MainTabs = ({ navigation }) => {
                         backgroundColor: '#fff',
                         borderTopWidth: 0,
                         elevation: 0,
-                        height: 60, // Increase height slightly
+                        height: 90, // Taller for labels
                         ...styles.shadow
                     },
                     tabBarIcon: ({ focused, color, size }) => {
@@ -93,7 +93,8 @@ const MainTabs = ({ navigation }) => {
 
                         return <Ionicons name={iconName} size={size} color={color} />;
                     },
-                    tabBarShowLabel: false, // Hide labels for cleaner look
+                    tabBarShowLabel: true, 
+                    tabBarLabelStyle: { marginBottom: 5, fontSize: 10 },
                 })}
             >
                 <Tab.Screen name="Tasks" component={TasksScreen} />
@@ -107,8 +108,11 @@ const MainTabs = ({ navigation }) => {
                              <Ionicons name="add" size={40} color="#fff" />
                         ),
                         tabBarButton: (props) => (
-                            <CustomTabBarButton {...props} onPress={() => setModalVisible(true)} />
-                        )
+                            <CustomTabBarButton {...props} onPress={() => setModalVisible(true)}>
+                                <Ionicons name="add" size={40} color="#fff" />
+                            </CustomTabBarButton>
+                        ),
+                        tabBarLabel: () => null // Hide label for the create button
                     }}
                 />
 
