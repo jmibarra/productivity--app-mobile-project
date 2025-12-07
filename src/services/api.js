@@ -58,6 +58,15 @@ export const getHabits = async () => {
     }
 }
 
+export const createTask = async (taskData) => {
+    try {
+        const response = await api.post('/tasks', taskData);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const updateTask = async (id, updates) => {
     try {
         const response = await api.patch(`/tasks/${id}`, updates);
