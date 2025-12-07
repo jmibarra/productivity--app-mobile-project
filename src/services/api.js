@@ -31,9 +31,15 @@ export const loginUser = async (email, password) => {
     }
 }
 
-export const getTasks = async (page = 1, limit = 10, sortBy = 'createdAt', sortDirection = 'desc') => {
+export const getTasks = async (page = 1, limit = 10, sortBy = 'createdAt', sortDirection = 'desc', listId = null) => {
     try {
-        const response = await api.get(`/tasks?page=${page}&limit=${limit}&sortBy=${sortBy}&sortDirection=${sortDirection}`);
+        let url = `/tasks?page=${page}&limit=${limit}&sortBy=${sortBy}&sortDirection=${sortDirection}`;
+        
+        if (listId && listId !== 'all') {
+            url = `/tasks/list/${listId}?page=${page}&limit=${limit}&sortBy=${sortBy}&sortDirection=${sortDirection}`;
+        }
+
+        const response = await api.get(url);
         // Backend returns { tasks: [...], count: N }
         return response.data; 
     } catch (error) {
@@ -71,6 +77,15 @@ export const createTask = async (taskData) => {
 export const updateTask = async (id, updates) => {
     try {
         const response = await api.patch(`/tasks/${id}`, updates);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const getLists = async () => {
+    try {
+        const response = await api.get('/lists');
         return response.data;
     } catch (error) {
         throw error;

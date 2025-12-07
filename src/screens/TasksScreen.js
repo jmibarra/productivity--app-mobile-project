@@ -1,9 +1,9 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useContext, useCallback, useState } from 'react'; // Removed useEffect
 
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, Switch, ScrollView } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
-import { getTasks, updateTask } from '../services/api'; 
+import { getTasks, updateTask, getLists } from '../services/api'; 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -17,14 +17,19 @@ const TasksScreen = ({ navigation }) => {
     const [hasMore, setHasMore] = useState(true);
     const [showUncompletedOnly, setShowUncompletedOnly] = useState(false);
 
+    // List Filtering State
+    const [lists, setLists] = useState([]);
+    const [selectedListId, setSelectedListId] = useState('all');
+
     const fetchTasks = async (pageNum, shouldRefresh = false) => {
         if (!hasMore && !shouldRefresh) return;
         
         try {
-            if (shouldRefresh) setLoading(true); // Initial load or refresh
+            if (shouldRefresh) setLoading(true); 
             else setLoadingMore(true);
 
-            const data = await getTasks(pageNum, 10);
+            // Fetch tasks filtered by selectedListId
+            const data = await getTasks(pageNum, 10, 'createdAt', 'desc', selectedListId);
             const newTasks = data.tasks || [];
             
             if (shouldRefresh) {
@@ -37,7 +42,7 @@ const TasksScreen = ({ navigation }) => {
                 });
             }
 
-            setHasMore(newTasks.length === 10); // Assume 10 is limit
+            setHasMore(newTasks.length === 10);
         } catch (e) {
             console.log(e);
         } finally {
@@ -47,11 +52,40 @@ const TasksScreen = ({ navigation }) => {
         }
     };
 
+    const fetchUserLists = async () => {
+        try {
+            const userLists = await getLists(); // Renamed to avoid confusion with local var
+            setLists(userLists);
+        } catch (e) {
+            console.log("Error fetching lists", e);
+        }
+    }
+
+    // Handle List Selection
+    const handleListSelect = (listId) => {
+        if (selectedListId === listId) return;
+        setSelectedListId(listId);
+        // Effect will trigger fetchTasks
+    };
+
+    // Effect to refetch tasks when list changes
+    React.useEffect(() => {
+        setPage(1);
+        setHasMore(true);
+        setTasks([]); // Clear tasks while loading new list
+        fetchTasks(1, true);
+    }, [selectedListId]);
+    
+    // Initial Load
+    React.useEffect(() => {
+        fetchUserLists();
+    }, []);
+
+    // Removed useFocusEffect in favor of explicit useEffects managed by state changes
     useFocusEffect(
         useCallback(() => {
-            setPage(1);
-            setHasMore(true);
-            fetchTasks(1, true); // Reset and load page 1
+             // Optional: Refetch if returning to screen. For now, rely on persisted state.
+             // If needed, we can re-trigger fetchTasks(page, true) here, but need to be careful with double fetching.
         }, [])
     );
 
@@ -155,29 +189,88 @@ const TasksScreen = ({ navigation }) => {
                     <ActivityIndicator size="large" color="#007AFF" />
                 </View>
             ) : (
-                <FlatList 
-                    data={filteredTasks}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item._id ? item._id.toString() : Math.random().toString()}
-                    contentContainerStyle={styles.listContent}
-                    ListEmptyComponent={<Text style={styles.emptyText}>No tasks found</Text>}
-                    onEndReached={handleLoadMore}
-                    onEndReachedThreshold={0.5}
-                    ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#007AFF" style={{ marginVertical: 20 }} /> : null}
-                    refreshing={refreshing}
-                    onRefresh={() => {
-                        setRefreshing(true);
-                        setPage(1);
-                        setHasMore(true);
-                        fetchTasks(1, true);
-                    }}
-                />
+                <>
+                    <View style={styles.listsContainer}>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listsContent}>
+                            <TouchableOpacity 
+                                style={[styles.listChip, selectedListId === 'all' && styles.listChipSelected]}
+                                onPress={() => handleListSelect('all')}
+                            >
+                                <Ionicons name="list" size={16} color={selectedListId === 'all' ? '#fff' : '#666'} />
+                                <Text style={[styles.listChipText, selectedListId === 'all' && styles.listChipTextSelected]}>Todos</Text>
+                            </TouchableOpacity>
+
+                            {lists.map(list => (
+                                <TouchableOpacity 
+                                    key={list._id} 
+                                    style={[styles.listChip, selectedListId === list._id && styles.listChipSelected]}
+                                    onPress={() => handleListSelect(list._id)}
+                                >
+                                    {/* Can map icons here later */}
+                                    <Ionicons name="folder-open-outline" size={16} color={selectedListId === list._id ? '#fff' : '#666'} />
+                                    <Text style={[styles.listChipText, selectedListId === list._id && styles.listChipTextSelected]}>{list.name}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </View>
+
+                    <FlatList 
+                        data={filteredTasks}
+                        renderItem={renderItem}
+                        keyExtractor={(item) => item._id ? item._id.toString() : Math.random().toString()}
+                        contentContainerStyle={styles.listContent}
+                        ListEmptyComponent={<Text style={styles.emptyText}>No tasks found</Text>}
+                        onEndReached={handleLoadMore}
+                        onEndReachedThreshold={0.5}
+                        ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#007AFF" style={{ marginVertical: 20 }} /> : null}
+                        refreshing={refreshing}
+                        onRefresh={() => {
+                            setRefreshing(true);
+                            setPage(1);
+                            setHasMore(true);
+                            fetchTasks(1, true);
+                        }}
+                    />
+                </>
             )}
         </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
+    listsContainer: {
+        backgroundColor: '#fff',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    listsContent: {
+        paddingHorizontal: 15,
+    },
+    listChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 20,
+        marginRight: 10,
+        borderWidth: 1,
+        borderColor: 'transparent'
+    },
+    listChipSelected: {
+        backgroundColor: '#007AFF',
+        borderColor: '#0056b3'
+    },
+    listChipText: {
+        marginLeft: 6,
+        fontSize: 14,
+        color: '#333',
+        fontWeight: '500'
+    },
+    listChipTextSelected: {
+        color: '#fff'
+    },
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
