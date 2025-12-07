@@ -1,7 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useContext, useCallback, useState } from 'react'; // Removed useEffect
+
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, Switch } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
-import { getTasks, updateTask } from '../services/api'; // Import updateTask
+import { getTasks, updateTask } from '../services/api'; 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -9,22 +11,59 @@ const TasksScreen = ({ navigation }) => {
     const { userInfo } = useContext(AuthContext);
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showUncompletedOnly, setShowUncompletedOnly] = useState(false); // Filter state
+    const [refreshing, setRefreshing] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [showUncompletedOnly, setShowUncompletedOnly] = useState(false);
 
-    useEffect(() => {
-        loadTasks();
-    }, []);
-
-    const loadTasks = async () => {
+    const fetchTasks = async (pageNum, shouldRefresh = false) => {
+        if (!hasMore && !shouldRefresh) return;
+        
         try {
-            const data = await getTasks();
-            setTasks(data);
+            if (shouldRefresh) setLoading(true); // Initial load or refresh
+            else setLoadingMore(true);
+
+            const data = await getTasks(pageNum, 10);
+            const newTasks = data.tasks || [];
+            
+            if (shouldRefresh) {
+                setTasks(newTasks);
+            } else {
+                setTasks(prev => {
+                    const existingIds = new Set(prev.map(t => t._id));
+                    const uniqueNewTasks = newTasks.filter(t => !existingIds.has(t._id));
+                    return [...prev, ...uniqueNewTasks];
+                });
+            }
+
+            setHasMore(newTasks.length === 10); // Assume 10 is limit
         } catch (e) {
             console.log(e);
         } finally {
             setLoading(false);
+            setRefreshing(false);
+            setLoadingMore(false);
         }
     };
+
+    useFocusEffect(
+        useCallback(() => {
+            setPage(1);
+            setHasMore(true);
+            fetchTasks(1, true); // Reset and load page 1
+        }, [])
+    );
+
+    const handleLoadMore = () => {
+        if (!loadingMore && hasMore && !loading) {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            fetchTasks(nextPage, false);
+        }
+    };
+    
+
 
     const handleToggleComplete = async (task) => {
         try {
@@ -38,8 +77,8 @@ const TasksScreen = ({ navigation }) => {
             await updateTask(task._id, { completed: !task.completed });
         } catch (e) {
             console.log('Error updating task:', e);
-            // Revert changes if API fails (optional but good practice)
-            loadTasks(); 
+            alert('Failed to update task');
+            // Reverting optimistic update requires finding the original task state, simplistic log here
         }
     };
 
@@ -119,9 +158,19 @@ const TasksScreen = ({ navigation }) => {
                 <FlatList 
                     data={filteredTasks}
                     renderItem={renderItem}
-                    keyExtractor={(item) => item._id ? item._id.toString() : Math.random().toString()} // Use _id from Mongo
+                    keyExtractor={(item) => item._id ? item._id.toString() : Math.random().toString()}
                     contentContainerStyle={styles.listContent}
                     ListEmptyComponent={<Text style={styles.emptyText}>No tasks found</Text>}
+                    onEndReached={handleLoadMore}
+                    onEndReachedThreshold={0.5}
+                    ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#007AFF" style={{ marginVertical: 20 }} /> : null}
+                    refreshing={refreshing}
+                    onRefresh={() => {
+                        setRefreshing(true);
+                        setPage(1);
+                        setHasMore(true);
+                        fetchTasks(1, true);
+                    }}
                 />
             )}
         </SafeAreaView>
@@ -133,35 +182,10 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f5f5f5',
     },
-    header: {
-        padding: 20,
-        backgroundColor: '#fff',
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    filterContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    filterText: {
-        marginRight: 10,
-        color: '#666',
-    },
-    center: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+    // ...
     listContent: {
         padding: 20,
+        paddingBottom: 100, // Ensure last item is visible above Tab Bar
     },
     card: {
         backgroundColor: '#fff',

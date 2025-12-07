@@ -31,10 +31,11 @@ export const loginUser = async (email, password) => {
     }
 }
 
-export const getTasks = async () => {
+export const getTasks = async (page = 1, limit = 10, sortBy = 'createdAt', sortDirection = 'desc') => {
     try {
-        const response = await api.get('/tasks');
-        return response.data.tasks || []; 
+        const response = await api.get(`/tasks?page=${page}&limit=${limit}&sortBy=${sortBy}&sortDirection=${sortDirection}`);
+        // Backend returns { tasks: [...], count: N }
+        return response.data; 
     } catch (error) {
         throw error;
     }
