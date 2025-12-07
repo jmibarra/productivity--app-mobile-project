@@ -42,7 +42,37 @@ const TaskDetailScreen = ({ route }) => {
                     </View>
                 </View>
 
-                {/* Future: Edit Date, List, etc. */}
+                <View style={styles.section}>
+                    <Text style={styles.label}>Details</Text>
+                    
+                    {/* List */}
+
+                    <View style={styles.detailRow}>
+                        <Ionicons name="list" size={20} color="#666" style={styles.detailIcon} />
+                        <Text style={styles.detailText}>{task.list || 'Default'}</Text>
+                    </View>
+
+                    {/* Due Date */}
+                    <View style={styles.detailRow}>
+                        <Ionicons name="calendar-outline" size={20} color="#666" style={styles.detailIcon} />
+                        <Text style={styles.detailText}>
+                            {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
+                        </Text>
+                    </View>
+
+                    {/* Labels */}
+                    <View style={styles.labelsContainer}>
+                        {task.labels && task.labels.length > 0 ? (
+                            task.labels.map((label, index) => (
+                                <View key={index} style={styles.labelChip}>
+                                    <Text style={styles.labelText}>{label}</Text>
+                                </View>
+                            ))
+                        ) : (
+                             <Text style={styles.noDataText}>No labels</Text>
+                        )}
+                   </View>
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -68,6 +98,24 @@ const styles = StyleSheet.create({
     text: { fontSize: 16, color: '#333', lineHeight: 24 },
     priorityRow: { flexDirection: 'row', alignItems: 'center' },
     priorityText: { fontSize: 18, fontWeight: '500', marginLeft: 10 },
+    
+    // New Styles
+    detailRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+    detailIcon: { marginRight: 12, width: 22, textAlign: 'center' },
+    detailText: { fontSize: 16, color: '#333' },
+    labelsContainer: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 },
+    labelChip: { 
+        backgroundColor: '#f0f0f0', 
+        paddingHorizontal: 12, 
+        paddingVertical: 6, 
+        borderRadius: 16,
+        marginRight: 8,
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: '#e5e5e5'
+    },
+    labelText: { fontSize: 13, color: '#555' },
+    noDataText: { fontSize: 15, color: '#999', fontStyle: 'italic', marginLeft: 4 }
 });
 
 export default TaskDetailScreen;
